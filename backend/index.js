@@ -20,9 +20,25 @@ connectDB();
 
 const app = express();
 
-// CORS configuration for production
+// CORS configuration for production - allows Vercel preview URLs
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "*",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+
+    // Allow all Vercel app URLs and localhost for development
+    const allowedPatterns = [
+      /^https:\/\/.*\.vercel\.app$/,
+      /^http:\/\/localhost:\d+$/,
+    ];
+
+    const isAllowed = allowedPatterns.some(pattern => pattern.test(origin));
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };
